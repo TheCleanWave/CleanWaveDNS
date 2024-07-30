@@ -5,6 +5,12 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 #include <Windows.h>
+#else
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <string.h>
+typedef unsigned int UINT;
 #endif
 
 #include "ConsoleUtils.h"
@@ -35,18 +41,18 @@ int main() {
 #endif
 
 	DebugPrint(DEBUG_TYPE::INFO_MSG, "Initializing socket");
-	SOCKET sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == INVALID_SOCKET) {
+	int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock < 0) {
 		DebugPrint(DEBUG_TYPE::FATAL_MSG, "Error creating the socket");
 		return 1;
 	}
 
-	SOCKADDR_IN saIn = { };
+	sockaddr_in saIn = { };
 	saIn.sin_family = AF_INET;
 	saIn.sin_port = htons(PORT);
 	saIn.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(sock, (SOCKADDR*)&saIn, sizeof(saIn)) == SOCKET_ERROR) {
+	if (bind(sock, (sockaddr*)&saIn, sizeof(saIn)) == -1) {
 		DebugPrint(DEBUG_TYPE::FATAL_MSG, "Error binding to port");
 		return 1;
 	}
@@ -61,9 +67,9 @@ int main() {
 
 	while (!g_bQuit) {
 		char data[1024];
-		SOCKADDR_IN sender = { };
-		int senderSize = sizeof(sender);
-		UINT received = recvfrom(sock, data, sizeof(data), 0, (SOCKADDR*)&sender, &senderSize);
+		sockaddr_in sender = { };
+		socklen_t senderSize = sizeof(sender);
+		UINT received = recvfrom(sock, data, sizeof(data), 0, (sockaddr*)&sender, &senderSize);
 
 		if (received < 12) {
 			DebugPrint(DEBUG_TYPE::ERROR_MSG, "Invalid DNS packet length received. Skipping.");
@@ -163,41 +169,41 @@ int main() {
 			response[responseLen++] = 0x04;
 
 			/* DEBUG: Google ip */
-			response[responseLen++] = 0x8e;
-			response[responseLen++] = 0xfa; 
-			response[responseLen++] = 0xc9;
-			response[responseLen++] = 0x43;
+			response[responseLen++] = 0x7F;
+			response[responseLen++] = 0x00; 
+			response[responseLen++] = 0x00;
+			response[responseLen++] = 0x01;
 
-			sendto(sock, response, responseLen, 0, (SOCKADDR*)&sender, sizeof(SOCKADDR_IN));
+			sendto(sock, response, responseLen, 0, (sockaddr*)&sender, sizeof(sockaddr_in));
 		}
 		else {
 			DebugPrint(DEBUG_TYPE::INFO_MSG, "Received query for an A RECORD for: " + qname);
 
-			SOCKET forwardSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			int forwardSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-			SOCKADDR_IN forwardIn = { };
+			sockaddr_in forwardIn = { };
 			forwardIn.sin_family = AF_INET;
 			forwardIn.sin_port = htons(PORT);
 			inet_pton(AF_INET, PRIMARY_DNS, &forwardIn.sin_addr.s_addr);
 
-			if (sendto(forwardSock, data, received, 0, (SOCKADDR*)&forwardIn, sizeof(forwardIn)) == SOCKET_ERROR) {
+			if (sendto(forwardSock, data, received, 0, (sockaddr*)&forwardIn, sizeof(forwardIn)) == -1) {
 				DebugPrint(DEBUG_TYPE::ERROR_MSG, "Error forwarding the query to the primary DNS");
 				continue;
 			}
 
 			char forwardResponse[512];
-			SOCKADDR_IN resAddr;
-			int resLength = sizeof(resAddr);
-			int forwardLength = recvfrom(forwardSock, forwardResponse, sizeof(forwardResponse), 0, (SOCKADDR*)&resAddr, &resLength);
+			sockaddr_in resAddr;
+			socklen_t resLength = sizeof(resAddr);
+			int forwardLength = recvfrom(forwardSock, forwardResponse, sizeof(forwardResponse), 0, (sockaddr*)&resAddr, &resLength);
 
-			if (forwardLength == SOCKET_ERROR) {
+			if (forwardLength == -1) {
 				std::cout << "[ERROR] Socket error received" << std::endl;
 				DebugPrint(DEBUG_TYPE::ERROR_MSG, "Socket error received");
 
 				continue;
 			}
 
-			sendto(sock, forwardResponse, forwardLength, 0, (SOCKADDR*)&sender, sizeof(sender));
+			sendto(sock, forwardResponse, forwardLength, 0, (sockaddr*)&sender, sizeof(sender));
 		}
 	}
 

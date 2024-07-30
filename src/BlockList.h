@@ -2,7 +2,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#ifdef WIN32
 #include <Windows.h>
+#else
+typedef unsigned int UINT;
+#endif
 #include <fstream>
 #include <algorithm>
 
