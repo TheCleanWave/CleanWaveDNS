@@ -13,6 +13,9 @@
 typedef unsigned int UINT;
 #endif
 
+#include <thread>
+#include <mutex>
+
 #include "ConsoleUtils.h"
 #include "BlockList.h"
 

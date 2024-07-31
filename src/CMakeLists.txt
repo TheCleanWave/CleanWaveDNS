@@ -3,7 +3,7 @@
 #
 
 # Agregue un origen al ejecutable de este proyecto.
-add_executable (CleanWave  "main.cpp" "ConsoleUtils.h" "Colors.h" "BlockList.h" "BlockList.cpp")
+add_executable (CleanWave  "main.cpp" "ConsoleUtils.h" "Colors.h" "BlockList.h" "BlockList.cpp" "CWP.h" "CWP.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET CleanWave PROPERTY CXX_STANDARD 20)
