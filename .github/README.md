@@ -6,6 +6,7 @@
 
 # Blocklist
 - Create a blocklist file on the same folder as CleanWave
+- We recommend using [oisd.nl](https://oisd.nl) blocklists.
 # TODO
 - Configuration files
 - CleanWave protocol for communicating with web backend.
