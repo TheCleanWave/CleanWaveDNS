@@ -52,7 +52,7 @@ int main() {
 	saIn.sin_port = htons(PORT);
 	saIn.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(sock, (sockaddr*)&saIn, sizeof(saIn)) == -1) {
+	if (bind(sock, (const struct sockaddr*)&saIn, sizeof(saIn)) < 0) {
 		DebugPrint(DEBUG_TYPE::FATAL_MSG, "Error binding to port");
 		return 1;
 	}
