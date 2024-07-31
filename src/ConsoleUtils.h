@@ -29,5 +29,5 @@ inline void DebugPrint(DEBUG_TYPE type, std::string msg) {
 		break;
 	}
 
-	std::cout << printedMsg << std::endl;
+	std::cout << printedMsg + "\n";
 }

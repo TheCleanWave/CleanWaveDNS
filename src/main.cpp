@@ -18,6 +18,7 @@ typedef unsigned int UINT;
 
 #include "ConsoleUtils.h"
 #include "BlockList.h"
+#include "CWP.h"
 
 #define VERSION 0.1
 
@@ -28,6 +29,8 @@ bool g_bQuit = false;
 char PRIMARY_DNS[] = "8.8.8.8";
 
 BlockList* g_blockList = nullptr;
+
+std::thread g_cwpThread;
 
 int main() {
 	std::cout << "CleanWave. The most powerful DNS for privacy and ad blocking. Version: " << VERSION << std::endl;
@@ -43,7 +46,10 @@ int main() {
 	}
 #endif
 
-	DebugPrint(DEBUG_TYPE::INFO_MSG, "Initializing socket");
+	g_cwpThread = std::thread(ProtocolThread);
+	g_cwpThread.detach();
+
+	DebugPrint(DEBUG_TYPE::INFO_MSG, "Initializing DNS server socket");
 	int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		DebugPrint(DEBUG_TYPE::FATAL_MSG, "Error creating the socket");
