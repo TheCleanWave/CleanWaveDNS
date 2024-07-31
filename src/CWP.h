@@ -12,6 +12,8 @@
 typedef unsigned int UINT;
 #endif
 
+#include <thread>
+#include <mutex>
 #include <string>
 
 #include "ConsoleUtils.h"
@@ -20,4 +22,9 @@ typedef unsigned int UINT;
 #define PROTOCOL_PORT 18450
 #define MAX_CONN 10
 
+enum OPCODES {
+
+};
+
+void ClientThread(int sock, std::string ip, UINT port);
 void ProtocolThread();

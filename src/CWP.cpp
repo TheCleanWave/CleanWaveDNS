@@ -37,5 +37,12 @@ void ProtocolThread() {
 		UINT clientPort = ntohs(clientAddr.sin_port);
 
 		DebugPrint(DEBUG_TYPE::INFO_MSG, std::string("(CWP) New connection from: ") + std::string(clientIp) + ':' + std::to_string(clientPort));
+
+		std::thread clientThread(ClientThread, client, clientIp, clientPort);
+		clientThread.detach();
 	}
+}
+
+void ClientThread(int sock, std::string ip, UINT port) {
+	
 }
